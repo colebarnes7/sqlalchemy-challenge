@@ -93,5 +93,34 @@ def tobs():
     temp_data = list(np.ravel(temp_data))
     return jsonify(temp_data)
 
+@app.route("/api/v1.0/<start>")
+def start_temps(start):
+    # Turns user input into appropriate date format
+    year, month, day = map(int, start.split("-"))
+    date1 = dt.date(year, month, day)
+    
+    # Create a session from python to database
+    session = Session(engine)
+
+    # Query to get the min, max and average temperature of most active station given a start date
+    sel = [func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)]
+    temp = session.query(*sel).filter(Measurement.station == 'USC00519281',\
+        func.strftime(Measurement.date)>=date1).all()
+    
+    # Close the session
+    session.close
+
+    # Create a dictionary from the data retrieved
+    min_max_avg = []
+    for min, max, avg in temp:
+        dict = {}
+        dict["min temp"] = min
+        dict["max temp"] = max
+        dict["avg temp"] = avg
+        min_max_avg.append(dict)
+    
+    # Return dictionary jsonified for the API route
+    return jsonify(min_max_avg)
+
 if __name__ == "__main__":
     app.run(debug=True)
