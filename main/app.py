@@ -122,5 +122,38 @@ def start_temps(start):
     # Return dictionary jsonified for the API route
     return jsonify(min_max_avg)
 
+@app.route("/api/v1.0/<start>/<end>")
+def start_end_temps(start, end):
+    # Turns first user input into appropriate date format
+    year, month, day = map(int, start.split("-"))
+    date1 = dt.date(year, month, day)
+    
+    # Turns second user input into appropriate date format
+    year, month, day = map(int, end.split("-"))
+    date2 = dt.date(year, month, day)
+
+    # Create a session from python to database
+    session = Session(engine)
+
+    # Query to get the min, max and average temperature of most active station given a start date
+    sel = [func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)]
+    temp = session.query(*sel).filter(Measurement.station == 'USC00519281',\
+        func.strftime(Measurement.date)>=date1, func.strftime(Measurement.date)<=date2).all()
+    
+    # Close the session
+    session.close
+
+    # Create a dictionary from the data retrieved
+    min_max_avg = []
+    for min, max, avg in temp:
+        dict = {}
+        dict["min temp"] = min
+        dict["max temp"] = max
+        dict["avg temp"] = avg
+        min_max_avg.append(dict)
+    
+    # Return dictionary jsonified for the API route
+    return jsonify(min_max_avg)
+
 if __name__ == "__main__":
     app.run(debug=True)
