@@ -36,7 +36,8 @@ def home():
         f"Available routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
-        f"/api/v1.0/tobs<br/>")
+        f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/StartDate(YYYY-MM-DD)/EndDate(YYYY-MM-DD)")
         
 @app.route("/api/v1.0/precipitation")
 def precipitation():
